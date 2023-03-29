@@ -1,7 +1,7 @@
 package crank.us.services;
 
 import crank.us.exceptions.ExistException;
-import crank.us.models.user.User;
+import crank.us.models.User;
 import crank.us.repositories.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 
 @Service
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)

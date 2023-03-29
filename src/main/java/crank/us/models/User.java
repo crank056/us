@@ -1,5 +1,6 @@
-package crank.us.models.user;
+package crank.us.models;
 
+import crank.us.enums.Division;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,8 +25,17 @@ public class User {
     private String firstName;
     @Column(name = "last_name")
     private String lastName;
+    @Column(name = "personal_number")
+    private Integer personalNumber;
     @Column(name = "registration_date")
     private LocalDateTime registrationDate;
+    @ManyToOne
+    @JoinColumn(name = "manager_id", referencedColumnName = "id")
+    private User manager;
+    @Column(name = "is_manager")
+    private Boolean isManager;
+    @Enumerated(EnumType.STRING)
+    private Division division;
 
     @Override
     public String toString() {

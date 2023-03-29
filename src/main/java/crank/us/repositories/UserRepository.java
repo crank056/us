@@ -1,6 +1,6 @@
 package crank.us.repositories;
 
-import crank.us.models.user.User;
+import crank.us.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long> {

@@ -13,10 +13,10 @@ public class ReplyKeyboardMaker {
 
     public ReplyKeyboardMarkup getMainMenuKeyboard() {
         List<KeyboardRow> keyboard = new ArrayList<>();
-        keyboard.add(createKeyBoardRow("Персонаж Магазин"));
-        keyboard.add(createKeyBoardRow("Почта Арена"));
-        keyboard.add(createKeyBoardRow("Рейтинг Завод"));
-        keyboard.add(createKeyBoardRow("Настройки Гильдии"));
+        keyboard.add(createKeyBoardRow("Профиль"));
+        keyboard.add(createKeyBoardRow("Задания"));
+        keyboard.add(createKeyBoardRow("Настройки"));
+        keyboard.add(createKeyBoardRow("Настройки"));
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setKeyboard(keyboard);
         replyKeyboardMarkup.setSelective(true);
