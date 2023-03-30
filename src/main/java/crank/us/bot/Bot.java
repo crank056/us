@@ -1,5 +1,6 @@
 package crank.us.bot;
 
+import crank.us.exceptions.AccessException;
 import crank.us.exceptions.ExistException;
 import crank.us.exceptions.WrongFormatException;
 import lombok.Getter;
@@ -70,7 +71,6 @@ public class Bot extends SpringWebhookBot {
                         String link = split[split.length - 1];
                         sendMessage.setText(split[0]);
                         execute(new SendPhoto(sendMessage.getChatId(), new InputFile(new File(link))));
-
                     }
                     sendMessage.setText(sendMessage.getText().replace("_", "\\_"));
                 } else {
@@ -90,7 +90,7 @@ public class Bot extends SpringWebhookBot {
         }
     }
 
-    private BotApiMethod<?> handleUpdate(Update update) throws ExistException, WrongFormatException {
+    private BotApiMethod<?> handleUpdate(Update update) throws ExistException, WrongFormatException, AccessException {
         if (update.hasCallbackQuery()) {
             log.info("has СallBackQuerry: {}", update.getCallbackQuery().getData());
             CallbackQuery callbackQuery = update.getCallbackQuery();

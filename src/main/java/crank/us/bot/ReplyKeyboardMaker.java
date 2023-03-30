@@ -16,7 +16,6 @@ public class ReplyKeyboardMaker {
         keyboard.add(createKeyBoardRow("Профиль"));
         keyboard.add(createKeyBoardRow("Задания"));
         keyboard.add(createKeyBoardRow("Настройки"));
-        keyboard.add(createKeyBoardRow("Настройки"));
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setKeyboard(keyboard);
         replyKeyboardMarkup.setSelective(true);

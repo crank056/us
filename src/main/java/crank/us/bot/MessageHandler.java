@@ -5,6 +5,8 @@ import crank.us.enums.Division;
 import crank.us.enums.Passwords;
 import crank.us.exceptions.ExistException;
 import crank.us.exceptions.WrongFormatException;
+import crank.us.locations.TaskLocation;
+import crank.us.locations.UserLocation;
 import crank.us.models.User;
 import crank.us.services.UserService;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -18,6 +20,8 @@ public class MessageHandler {
     ReplyKeyboardMaker replyKeyboardMaker;
     InlineKeyboardMaker inlineKeyboardMaker;
     UserService userService;
+    UserLocation userLocation;
+    TaskLocation taskLocation;
 
 
     public BotApiMethod<?> answerMessage(Message message) throws ExistException, WrongFormatException {
@@ -41,6 +45,10 @@ public class MessageHandler {
             return getRegister(message);
         } else if (inputText.toLowerCase().startsWith("/keyboard")) {
             return getKeyboard(message);
+        } else if (inputText.equalsIgnoreCase("профиль")) {
+            return userLocation.getProfile(chatId);
+        } else if (inputText.equalsIgnoreCase("задания")) {
+            return taskLocation.goToLocation(chatId);
         } else {
             throw new IllegalArgumentException();
         }

@@ -1,7 +1,9 @@
 package crank.us.bot;
 
+import crank.us.exceptions.AccessException;
 import crank.us.exceptions.ExistException;
 import crank.us.exceptions.WrongFormatException;
+import crank.us.locations.TaskLocation;
 import crank.us.locations.UserLocation;
 import crank.us.services.UserService;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -11,9 +13,10 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 public class CallbackQueryHandler {
     UserService userService;
     UserLocation userLocation;
+    TaskLocation taskLocation;
 
     public BotApiMethod<?> processCallbackQuery(CallbackQuery buttonQuery)
-            throws ExistException, WrongFormatException {
+            throws ExistException, WrongFormatException, AccessException {
         final String chatId = buttonQuery.getMessage().getChatId().toString();
         String data = buttonQuery.getData();
         SendMessage sendMessage = new SendMessage();
@@ -23,6 +26,9 @@ public class CallbackQueryHandler {
         }
         if (data.startsWith("USER")) {
             sendMessage = userLocation.menuHandler(chatId, data);
+            return sendMessage;
+        } if (data.startsWith("TASK")) {
+            sendMessage = taskLocation.menuHandler(chatId, data);
             return sendMessage;
         } else {
             return new SendMessage(chatId, "Неизвестный callback");

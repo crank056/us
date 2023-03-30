@@ -39,9 +39,11 @@ public class User {
 
     @Override
     public String toString() {
-        return "Telegram id: " + this.telegramId +
-                "Firstname: " + this.firstName +
-                "Lastname: " + this.lastName +
-                "Reg date: " + this.registrationDate;
+        return "Имя: " + this.firstName + "\n" +
+                "Фамилия: " + this.lastName + "\n" +
+                "Дата регистрации: " + this.registrationDate + "\n" +
+                "Табельный номер: " + this.personalNumber + "\n" +
+                "Подразделение: " + this.division + "\n" +
+                "Руководитель: " + this.manager + "\n";
     }
 }

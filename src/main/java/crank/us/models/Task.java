@@ -1,5 +1,6 @@
 package crank.us.models;
 
+import crank.us.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,14 +25,24 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "worker_id", referencedColumnName = "id")
     private User worker;
+    private String tittle;
     private String text;
     private Integer score;
     @Column(name = "start_date")
     private LocalDateTime startDate;
     @Column(name = "end_date")
     private LocalDateTime endDate;
-    @Column(name = "is_done")
-    private Boolean isDone;
-    @Column(name = "is_agreed")
-    private Boolean isAgreed;
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @Override
+    public String toString() {
+        return "Кем выдано: " + this.manager.getFirstName() + " " + this.manager.getLastName() + "\n" +
+                "Исполнитель: " + this.worker.getFirstName() + " " + this.worker.getLastName() + "\n" +
+                "Дата выдачи: " + this.startDate + "\n" +
+                "Срок выполнения: " + this.endDate + "\n" +
+                "Очки: " + this.score + "\n" +
+                "Статус: " + this.status + "\n" +
+                "Текст: " + this.text;
+    }
 }
