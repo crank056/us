@@ -36,6 +36,17 @@ public class User {
     private Boolean isManager;
     @Enumerated(EnumType.STRING)
     private Division division;
+    @ManyToOne
+    @JoinColumn(name = "worker_id", referencedColumnName = "id")
+    private User workerForTask;
+    @Column(name = "tittle_for_task")
+    private String tittleForTask;
+    @Column(name = "end_of_task")
+    private LocalDateTime endOfTask;
+    @Column(name = "task_text")
+    private String taskText;
+    @Column(name = "task_score")
+    private Integer taskScore;
 
     @Override
     public String toString() {

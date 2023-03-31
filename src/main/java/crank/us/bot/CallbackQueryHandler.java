@@ -6,10 +6,17 @@ import crank.us.exceptions.WrongFormatException;
 import crank.us.locations.TaskLocation;
 import crank.us.locations.UserLocation;
 import crank.us.services.UserService;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 
+@Component
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class CallbackQueryHandler {
     UserService userService;
     UserLocation userLocation;

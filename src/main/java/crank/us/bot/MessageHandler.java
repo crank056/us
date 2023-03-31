@@ -9,6 +9,10 @@ import crank.us.locations.TaskLocation;
 import crank.us.locations.UserLocation;
 import crank.us.models.User;
 import crank.us.services.UserService;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -16,6 +20,9 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 
+@Component
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class MessageHandler {
     ReplyKeyboardMaker replyKeyboardMaker;
     InlineKeyboardMaker inlineKeyboardMaker;
@@ -33,8 +40,9 @@ public class MessageHandler {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         if (!userService.existByTelegramId(Long.parseLong(chatId))) {
-            if (!inputText.equalsIgnoreCase("/start")) {
-                throw new ExistException("Зарегистрируйтесь через комманду /reg");
+            if (!inputText.equalsIgnoreCase("/start") && !inputText.startsWith("/reg")) {
+                throw new ExistException("Зарегистрируйтесь через комманду: \n" +
+                        "/reg пароль имя фамилия табельныйномер");
             }
         }
         if (inputText == null) {
@@ -49,6 +57,14 @@ public class MessageHandler {
             return userLocation.getProfile(chatId);
         } else if (inputText.equalsIgnoreCase("задания")) {
             return taskLocation.goToLocation(chatId);
+        } else if (inputText.toLowerCase().startsWith("тема")) {
+            return taskLocation.setTittle(chatId, inputText);
+        } else if (inputText.toLowerCase().startsWith("срок")) {
+            return taskLocation.setEnd(chatId, inputText);
+        } else if (inputText.toLowerCase().startsWith("задание")) {
+            return taskLocation.setText(chatId, inputText);
+        } else if (inputText.toLowerCase().startsWith("очки")) {
+            return taskLocation.setScore(chatId, inputText);
         } else {
             throw new IllegalArgumentException();
         }
@@ -62,12 +78,12 @@ public class MessageHandler {
 
     private SendMessage getRegister(Message message) throws ExistException, WrongFormatException {
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
-        for(Division division: Division.values()) {
+        for (Division division : Division.values()) {
             buttons.put(division.name(), "USER_SETDIV_" + division.name());
         }
         String link = "";
         String[] split = message.getText().split(" ");
-        if(split.length < 5) {
+        if (split.length < 5) {
             throw new WrongFormatException("Неверный формат сообщения");
         }
         try {
@@ -78,7 +94,7 @@ public class MessageHandler {
         User user = new User(null,
                 message.getFrom().getId(),
                 split[2], split[3], Integer.parseInt(split[4]),
-                LocalDateTime.now(), null, null, null);
+                LocalDateTime.now(), null, null, null, null, null, null, null, null);
         userService.createUser(user);
         String text = "Вы успешно зарегистрировались. Выберите своё подразделение:";
         return inlineKeyboardMaker.makeMessage(message.getChatId().toString(), buttons, text, link);

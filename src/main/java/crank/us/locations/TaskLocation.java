@@ -15,6 +15,10 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
+import javax.swing.text.DateFormatter;
+import java.security.PublicKey;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -159,11 +163,73 @@ public class TaskLocation {
             throw new AccessException("Вы не являетесь руководителем");
         }
         String[] split = data.split("_");
+        User manager = userService.getUserByTelegramId(Long.parseLong(chatId));
+        manager.setWorkerForTask(userRepository.getReferenceById(Long.parseLong(split[2])));
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
         buttons.put("К списку подчиненных", "TASK_GIVE");
         String link = "";
-        String text = "Id подчиненного: " + split[2] +  ". Для выдачи задания введите задание в строку сообщений в форме: \n" +
-                "Id Тема Срок выполнения(В формате дд.мм.гггг) Текст задания";
+        String text = "Введите тему задания в формате:\n" +
+                "Тема текст темы";
         return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
+    }
+
+    public SendMessage setTittle(String chatId, String data) {
+        User manager = userService.getUserByTelegramId(Long.parseLong(chatId));
+        manager.setTittleForTask(data.replaceFirst("Тема", ""));
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        buttons.put("К списку подчиненных", "TASK_GIVE");
+        String link = "";
+        String text = "Введите дату исполения в формате:\n" +
+                "Срок количество дней";
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
+    }
+
+    public SendMessage setEnd(String chatId, String data) {
+        User manager = userService.getUserByTelegramId(Long.parseLong(chatId));
+        String[] split = data.split(" ");
+        manager.setEndOfTask(LocalDateTime.now().plusDays(Long.parseLong(split[1])));
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        buttons.put("К списку подчиненных", "TASK_GIVE");
+        String link = "";
+        String text = "Введите текст задания в формате:\n" +
+                "Задание текст задания";
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
+    }
+
+    public SendMessage setText(String chatId, String data) {
+        User manager = userService.getUserByTelegramId(Long.parseLong(chatId));
+        manager.setTaskText(data.replaceFirst("Задание", ""));
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        buttons.put("К списку подчиненных", "TASK_GIVE");
+        String link = "";
+        String text = "Введите сложность задания в формате:\n" +
+                "Очки оценка от 1 до 10";
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
+    }
+
+    public SendMessage setScore(String chatId, String data) {
+        User manager = userService.getUserByTelegramId(Long.parseLong(chatId));
+        String[] split = data.split(" ");
+        manager.setTaskScore(Integer.parseInt(split[1]));
+        createTask(manager);
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        buttons.put("К списку подчиненных", "TASK_GIVE");
+        String link = "";
+        String text = "Задание успешно создано и отправлено работнику";
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
+    }
+
+    private void createTask(User manager) {
+        Task task = new Task(
+                null,
+                manager,
+                manager.getWorkerForTask(),
+                manager.getTittleForTask(),
+                manager.getTaskText(),
+                manager.getTaskScore(),
+                LocalDateTime.now(),
+                manager.getEndOfTask(),
+                Status.НОВАЯ);
+        taskRepository.save(task);
     }
 }

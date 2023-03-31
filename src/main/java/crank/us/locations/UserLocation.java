@@ -48,7 +48,7 @@ public class UserLocation {
     public SendMessage getProfile(String chatId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        User user = userService.getUserById(Long.parseLong(chatId));
+        User user = userService.getUserByTelegramId(Long.parseLong(chatId));
         String text = user.toString();
         text = text + "Новых задач: "
                 + taskRepository.getAllByWorkerIdAndStatus(user.getId(), Status.НОВАЯ).size() + "\n";
