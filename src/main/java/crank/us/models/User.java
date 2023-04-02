@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Getter
@@ -50,11 +51,12 @@ public class User {
 
     @Override
     public String toString() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         return "Имя: " + this.firstName + "\n" +
                 "Фамилия: " + this.lastName + "\n" +
-                "Дата регистрации: " + this.registrationDate + "\n" +
+                "Дата регистрации: " + this.registrationDate.format(formatter) + "\n" +
                 "Табельный номер: " + this.personalNumber + "\n" +
                 "Подразделение: " + this.division + "\n" +
-                "Руководитель: " + this.manager + "\n";
+                "Руководитель: " + this.manager.getFirstName() + " " + this.manager.getLastName() + "\n";
     }
 }

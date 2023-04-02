@@ -80,7 +80,7 @@ public class Bot extends SpringWebhookBot {
             } catch (IllegalArgumentException e) {
                 return new SendMessage(chatId,
                         "Недоступный вид сообщения");
-            } catch (ExistException | WrongFormatException e) {
+            } catch (ExistException | WrongFormatException | AccessException e) {
                 return new SendMessage(chatId, e.getMessage());
             } catch (Exception e) {
                 throw new RuntimeException(e);

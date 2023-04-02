@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Getter
@@ -37,10 +38,11 @@ public class Task {
 
     @Override
     public String toString() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
         return "Кем выдано: " + this.manager.getFirstName() + " " + this.manager.getLastName() + "\n" +
                 "Исполнитель: " + this.worker.getFirstName() + " " + this.worker.getLastName() + "\n" +
-                "Дата выдачи: " + this.startDate + "\n" +
-                "Срок выполнения: " + this.endDate + "\n" +
+                "Дата выдачи: " + this.startDate.format(formatter) + "\n" +
+                "Срок выполнения: " + this.endDate.format(formatter) + "\n" +
                 "Очки: " + this.score + "\n" +
                 "Статус: " + this.status + "\n" +
                 "Текст: " + this.text;

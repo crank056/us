@@ -94,7 +94,7 @@ public class MessageHandler {
         User user = new User(null,
                 message.getFrom().getId(),
                 split[2], split[3], Integer.parseInt(split[4]),
-                LocalDateTime.now(), null, null, null, null, null, null, null, null);
+                LocalDateTime.now(), null, false, null, null, null, null, null, null);
         userService.createUser(user);
         String text = "Вы успешно зарегистрировались. Выберите своё подразделение:";
         return inlineKeyboardMaker.makeMessage(message.getChatId().toString(), buttons, text, link);

@@ -13,9 +13,11 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import javax.swing.text.DateFormatter;
+
 import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -25,6 +27,7 @@ import java.util.List;
 @Component
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
+@Transactional
 public class TaskLocation {
     UserRepository userRepository;
     UserService userService;
@@ -83,21 +86,20 @@ public class TaskLocation {
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
         String[] split = data.split("_");
         Task task = taskRepository.getReferenceById(Long.parseLong(split[2]));
-        if (!task.getManager().getId().equals(Long.parseLong(chatId)) || !task.getWorker().getId().equals(Long.parseLong(chatId))) {
+        if (!task.getManager().getTelegramId().equals(Long.parseLong(chatId)) && !task.getWorker().getTelegramId().equals(Long.parseLong(chatId))) {
             throw new AccessException("У вас нет доступа к этой задаче");
         }
         String text = task.toString();
-        if (task.getWorker().getId().equals(Long.parseLong(chatId))) {
+        if (task.getWorker().getTelegramId().equals(Long.parseLong(chatId))) {
             if (task.getStatus().equals(Status.НОВАЯ)) {
                 buttons.put("Принять к исполнению", "TASK_SETSTATUS_" + Status.ВЫПОЛНЯЕТСЯ + "_" + task.getId());
             } else if (task.getStatus().equals(Status.ВЫПОЛНЯЕТСЯ)) {
                 buttons.put("Завершить", "TASK_SETSTATUS_" + Status.ЗАВЕРШЕНА + "_" + task.getId());
             }
         }
-        if (task.getManager().getId().equals(Long.parseLong(chatId))) {
+        if (task.getManager().getTelegramId().equals(Long.parseLong(chatId))) {
             if (task.getStatus().equals(Status.НОВАЯ)
-                    || task.getStatus().equals(Status.ВЫПОЛНЯЕТСЯ)
-                    || task.getStatus().equals(Status.ЗАВЕРШЕНА)) {
+                    || task.getStatus().equals(Status.ВЫПОЛНЯЕТСЯ)) {
                 buttons.put("Отменить", "TASK_SETSTATUS_" + Status.ОТМЕНЕНА + "_" + task.getId());
             } else if (task.getStatus().equals(Status.ЗАВЕРШЕНА)) {
                 buttons.put("Согласовать", "TASK_SETSTATUS_" + Status.СОГЛАСОВАНА + "_" + task.getId());
@@ -150,7 +152,7 @@ public class TaskLocation {
             throw new AccessException("Вы не являетесь руководителем");
         }
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
-        List<User> workerList = userRepository.getAllByManagerId(Long.parseLong(chatId));
+        List<User> workerList = userRepository.getAllByManagerId(userService.getUserByTelegramId(Long.parseLong(chatId)).getId());
         for(User user: workerList) {
             buttons.put(user.getFirstName() + " " + user.getLastName(), "TASK_GIVE_" + user.getId());
         }
@@ -231,5 +233,10 @@ public class TaskLocation {
                 manager.getEndOfTask(),
                 Status.НОВАЯ);
         taskRepository.save(task);
+        manager.setWorkerForTask(null);
+        manager.setTittleForTask(null);
+        manager.setTaskText(null);
+        manager.setTaskScore(null);
+        manager.setEndOfTask(null);
     }
 }

@@ -36,10 +36,9 @@ public class UserLocation {
         sendMessage.setChatId(chatId);
         if (data.startsWith("USER_SETDIV_")) {
             return setDivision(chatId, data);
-        } else if(data.startsWith("USER_SETMANAGER_")) {
+        } else if (data.startsWith("USER_SETMANAGER_")) {
             return setManager(chatId, data);
-        }
-        else {
+        } else {
             sendMessage.setText("Неизвестная команда, воспользуйся меню");
             return sendMessage;
         }
@@ -60,16 +59,16 @@ public class UserLocation {
         return sendMessage;
     }
 
-    private SendMessage setDivision (String chatId, String data) {
+    private SendMessage setDivision(String chatId, String data) {
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
         String link = "";
         User user = userService.getUserByTelegramId(Long.parseLong(chatId));
         String[] split = data.split("_");
         List<User> managers = userRepository.getAllByDivisionAndIsManager(Division.valueOf(split[2]), true);
         String text = "Выберите непосредственного руководителя";
-        for(User manager: managers) {
+        for (User manager : managers) {
             buttons.put(
-                    user.getFirstName() + "" +user.getLastName(),
+                    manager.getFirstName() + " " + manager.getLastName(),
                     "USER_SETMANAGER_" + user.getId() + "_" + manager.getId());
         }
         user.setDivision(Division.valueOf(split[2]));
