@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 
 @Service
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -19,11 +20,14 @@ public class UserService {
     UserRepository userRepository;
 
     @Transactional
-    public User createUser(User user) throws ExistException {
-        if (userRepository.existsByTelegramId(user.getTelegramId())) {
+    public User createUser(Integer personalNumber, Long telegramId) throws ExistException {
+        User user = userRepository.getByPersonalNumber(personalNumber);
+        if(user.getTelegramId() != null) {
             throw new ExistException("Вы уже регистрировались");
         }
-        return userRepository.save(user);
+        user.setTelegramId(telegramId);
+        user.setRegistrationDate(LocalDateTime.now());
+        return user;
     }
 
     public void updateUser(User user) {

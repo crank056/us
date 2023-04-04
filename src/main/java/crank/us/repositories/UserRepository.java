@@ -17,4 +17,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> getAllByDivisionAndIsManager(Division division, boolean isManager);
 
     List<User> getAllByManagerId(Long managerId);
+
+    boolean existsByPersonalNumber(Integer personalNumber);
+
+    User getByPersonalNumber(Integer personalNumber);
 }

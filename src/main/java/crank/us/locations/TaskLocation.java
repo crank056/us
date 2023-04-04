@@ -7,7 +7,6 @@ import crank.us.models.Task;
 import crank.us.models.User;
 import crank.us.repositories.TaskRepository;
 import crank.us.repositories.UserRepository;
-import crank.us.services.TaskService;
 import crank.us.services.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -16,11 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import javax.swing.text.DateFormatter;
-
-import java.security.PublicKey;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -63,6 +58,8 @@ public class TaskLocation {
             return getWorkerList(chatId);
         } else if (data.startsWith("TASK_GIVE_")) {
             return giveTask(chatId, data);
+        } else if (data.startsWith("TASK_SETSCORE_")) {
+            return setScore(chatId, data);
         } else {
             sendMessage.setText("Неизвестная команда, воспользуйся меню");
             return sendMessage;
@@ -153,7 +150,7 @@ public class TaskLocation {
         }
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
         List<User> workerList = userRepository.getAllByManagerId(userService.getUserByTelegramId(Long.parseLong(chatId)).getId());
-        for(User user: workerList) {
+        for (User user : workerList) {
             buttons.put(user.getFirstName() + " " + user.getLastName(), "TASK_GIVE_" + user.getId());
         }
         String link = "";
@@ -202,17 +199,21 @@ public class TaskLocation {
         User manager = userService.getUserByTelegramId(Long.parseLong(chatId));
         manager.setTaskText(data.replaceFirst("Задание", ""));
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        buttons.put("1", "TASK_SETSCORE_1");
+        buttons.put("2", "TASK_SETSCORE_2");
+        buttons.put("3", "TASK_SETSCORE_3");
+        buttons.put("4", "TASK_SETSCORE_4");
+        buttons.put("5", "TASK_SETSCORE_5");
         buttons.put("К списку подчиненных", "TASK_GIVE");
         String link = "";
-        String text = "Введите сложность задания в формате:\n" +
-                "Очки оценка от 1 до 10";
+        String text = "Введите сложность задания";
         return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
     }
 
-    public SendMessage setScore(String chatId, String data) {
+    private SendMessage setScore(String chatId, String data) {
         User manager = userService.getUserByTelegramId(Long.parseLong(chatId));
-        String[] split = data.split(" ");
-        manager.setTaskScore(Integer.parseInt(split[1]));
+        String[] split = data.split("_");
+        manager.setTaskScore(Integer.parseInt(split[2]));
         createTask(manager);
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
         buttons.put("К списку подчиненных", "TASK_GIVE");
