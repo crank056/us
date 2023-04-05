@@ -1,6 +1,7 @@
 package crank.us.models;
 
 import crank.us.enums.Division;
+import crank.us.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,6 +49,8 @@ public class User {
     private String taskText;
     @Column(name = "task_score")
     private Integer taskScore;
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
 
     @Override
     public String toString() {
@@ -57,6 +60,7 @@ public class User {
                 "Дата регистрации: " + this.registrationDate.format(formatter) + "\n" +
                 "Табельный номер: " + this.personalNumber + "\n" +
                 "Подразделение: " + this.division + "\n" +
-                "Руководитель: " + this.manager.getFirstName() + " " + this.manager.getLastName() + "\n";
+                "Руководитель: " + this.manager.getFirstName() + " " + this.manager.getLastName() + "\n" +
+                "Статус: " + this.status + "\n";
     }
 }

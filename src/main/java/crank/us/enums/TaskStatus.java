@@ -1,5 +1,5 @@
 package crank.us.enums;
 
-public enum Status {
+public enum TaskStatus {
     НОВАЯ, ВЫПОЛНЯЕТСЯ, ЗАВЕРШЕНА, СОГЛАСОВАНА, ОТМЕНЕНА
 }

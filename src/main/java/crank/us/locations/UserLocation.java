@@ -4,7 +4,9 @@ package crank.us.locations;
 import crank.us.bot.InlineKeyboardMaker;
 import crank.us.bot.ReplyKeyboardMaker;
 import crank.us.enums.Division;
-import crank.us.enums.Status;
+import crank.us.enums.TaskStatus;
+import crank.us.enums.UserStatus;
+import crank.us.models.Task;
 import crank.us.models.User;
 import crank.us.repositories.TaskRepository;
 import crank.us.repositories.UserRepository;
@@ -38,25 +40,29 @@ public class UserLocation {
             return setDivision(chatId, data);
         } else if (data.startsWith("USER_SETMANAGER_")) {
             return setManager(chatId, data);
-        } else {
+        } else if (data.startsWith("USER_GETSTATUSLIST")) {
+            return getStatusList(chatId);
+        } else if (data.startsWith("USER_SETSTATUS_")) {
+            return setStatus(chatId, data);
+        }else {
             sendMessage.setText("Неизвестная команда, воспользуйся меню");
             return sendMessage;
         }
     }
 
     public SendMessage getProfile(String chatId) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
         User user = userService.getUserByTelegramId(Long.parseLong(chatId));
         String text = user.toString();
         text = text + "Новых задач: "
-                + taskRepository.getAllByWorkerIdAndStatus(user.getId(), Status.НОВАЯ).size() + "\n";
+                + taskRepository.getAllByWorkerIdAndTaskStatus(user.getId(), TaskStatus.НОВАЯ).size() + "\n";
         text = text + "Задач в процессе: "
-                + taskRepository.getAllByWorkerIdAndStatus(user.getId(), Status.ВЫПОЛНЯЕТСЯ).size() + "\n";
+                + taskRepository.getAllByWorkerIdAndTaskStatus(user.getId(), TaskStatus.ВЫПОЛНЯЕТСЯ).size() + "\n";
         text = text + "Завершенных задач: "
-                + taskRepository.getAllByWorkerIdAndStatus(user.getId(), Status.ЗАВЕРШЕНА).size() + "\n";
-        sendMessage.setText(text);
-        return sendMessage;
+                + taskRepository.getAllByWorkerIdAndTaskStatus(user.getId(), TaskStatus.ЗАВЕРШЕНА).size() + "\n";
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        String link = "";
+        buttons.put("Сменить статус", "USER_GETSTATUSLIST");
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
     }
 
     private SendMessage setDivision(String chatId, String data) {
@@ -85,4 +91,26 @@ public class UserLocation {
         sendMessage.setReplyMarkup(replyKeyboardMaker.getMainMenuKeyboard());
         return sendMessage;
     }
+
+    private SendMessage getStatusList(String chatId) {
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        String link = "";
+        String text = "Выберите статус";
+        for(UserStatus status: UserStatus.values()) {
+            buttons.put(status.name(), "USER_SETSTATUS_" + status);
+        }
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
+    }
+
+    private SendMessage setStatus(String chatId, String data) {
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        String[] split = data.split("_");
+        User user = userService.getUserByTelegramId(Long.parseLong(chatId));
+        user.setStatus(UserStatus.valueOf(split[2]));
+        String text = "Статус установлен на " + user.getStatus();
+        String link = "";
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
+    }
+
+
 }

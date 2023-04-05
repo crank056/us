@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS USERS
     tittle_for_task   VARCHAR,
     end_of_task       TIMESTAMP WITHOUT TIME ZONE,
     task_text         VARCHAR,
-    task_score        INTEGER
+    task_score        INTEGER,
+    status            VARCHAR
 );
 
 CREATE TABLE IF NOT EXISTS TASKS
@@ -29,7 +30,7 @@ CREATE TABLE IF NOT EXISTS TASKS
     score      INTEGER,
     start_date TIMESTAMP WITHOUT TIME ZONE,
     end_date   TIMESTAMP WITHOUT TIME ZONE,
-    status     VARCHAR
+    task_status VARCHAR
 );
 
 

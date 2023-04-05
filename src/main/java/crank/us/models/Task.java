@@ -1,6 +1,6 @@
 package crank.us.models;
 
-import crank.us.enums.Status;
+import crank.us.enums.TaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,8 +33,9 @@ public class Task {
     private LocalDateTime startDate;
     @Column(name = "end_date")
     private LocalDateTime endDate;
+    @Column(name = "task_status")
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private TaskStatus taskStatus;
 
     @Override
     public String toString() {
@@ -44,7 +45,7 @@ public class Task {
                 "Дата выдачи: " + this.startDate.format(formatter) + "\n" +
                 "Срок выполнения: " + this.endDate.format(formatter) + "\n" +
                 "Очки: " + this.score + "\n" +
-                "Статус: " + this.status + "\n" +
+                "Статус: " + this.taskStatus + "\n" +
                 "Текст: " + this.text;
     }
 }
