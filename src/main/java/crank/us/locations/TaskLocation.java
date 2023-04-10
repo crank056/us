@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -56,6 +57,8 @@ public class TaskLocation {
         } else if (data.startsWith("TASK_GETGIVELIST_")) {
             return getGivedTasksList(chatId, data);
         } else if (data.equals("TASK_GIVE")) {
+            return getTaskGiveVar(chatId);
+        } else if (data.equals("TASK_GIVE_WORKER")) {
             return getWorkerList(chatId);
         } else if (data.startsWith("TASK_GIVE_")) {
             return giveTask(chatId, data);
@@ -128,6 +131,7 @@ public class TaskLocation {
         buttons.put("Текущие задания", "TASK_GETGIVELIST_ВЫПОЛНЯЕТСЯ");
         buttons.put("Завершенные задания", "TASK_GETGIVELIST_ЗАВЕРШЕНА");
         buttons.put("Согласованные задания", "TASK_GETGIVELIST_СОГЛАСОВАНА");
+        buttons.put("Просроченные задания", "TASK_GETGIVELIST_ПРОСРОЧЕНА");
         String link = "";
         return inlineKeyboardMaker.makeMessage(chatId, buttons, "Статусы выданных заданий", link);
     }
@@ -135,14 +139,37 @@ public class TaskLocation {
     private SendMessage getGivedTasksList(String chatId, String data) {
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
         String[] split = data.split("_");
-        List<Task> taskList = taskRepository.getAllByManagerIdAndTaskStatus(
-                userService.getUserByTelegramId(Long.parseLong(chatId)).getId(),
-                TaskStatus.valueOf(split[2]));
+        List<Task> taskList = new ArrayList<>();
+        if (split[2].equals("ПРОСРОЧЕНА")) {
+            taskList = taskRepository.getAllByManagerIdAndEndDateBefore(userService.getUserByTelegramId(Long.parseLong(chatId)).getId(),
+                    LocalDateTime.now());
+        } else {
+            taskList = taskRepository.getAllByManagerIdAndTaskStatus(
+                    userService.getUserByTelegramId(Long.parseLong(chatId)).getId(),
+                    TaskStatus.valueOf(split[2]));
+        }
         for (Task task : taskList) {
-            buttons.put(task.getTittle(), "TASK_GET_" + task.getId());
+            if (split[2].equals("ПРОСРОЧЕНА") && (task.getTaskStatus().equals(TaskStatus.ОТМЕНЕНА)
+                    || task.getTaskStatus().equals(TaskStatus.ЗАВЕРШЕНА)
+                    || task.getTaskStatus().equals(TaskStatus.СОГЛАСОВАНА))) {
+                {
+                }
+            } else {
+                buttons.put("Для " + task.getWorker().getFirstName() + " " + task.getWorker().getLastName() + ": "
+                        + task.getTittle(), "TASK_GET_" + task.getId());
+            }
         }
         String link = "";
         return inlineKeyboardMaker.makeMessage(chatId, buttons, "Список задач со статусом " + split[2], link);
+    }
+
+    private SendMessage getTaskGiveVar(String chatId) {
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        String link = "";
+        String text = "Выберите вариант:";
+        buttons.put("Задание для всех подчиненных", "TASK_GIVE_ALL");
+        buttons.put("Выбрать подчиненного", "TASK_GIVE_WORKER");
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
     }
 
     private SendMessage getWorkerList(String chatId) throws AccessException {
@@ -162,18 +189,25 @@ public class TaskLocation {
         if (!userService.getUserByTelegramId(Long.parseLong(chatId)).getIsManager()) {
             throw new AccessException("Вы не являетесь руководителем");
         }
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        String link = "";
         String[] split = data.split("_");
         User manager = userService.getUserByTelegramId(Long.parseLong(chatId));
-        if(userRepository.getReferenceById(Long.parseLong(split[2])).getTelegramId() == null) {
-            throw new ExistException("Данный работник еще не регистрировался в системе");
+        String text;
+        if (!split[2].equals("ALL")) {
+            if (userRepository.getReferenceById(Long.parseLong(split[2])).getTelegramId() == null) {
+                throw new ExistException("Данный работник еще не регистрировался в системе");
+            }
+            manager.setWorkerForTask(userRepository.getReferenceById(Long.parseLong(split[2])));
+            text = "Задание для " + manager.getWorkerForTask().getFirstName() + " " + manager.getWorkerForTask().getLastName() +
+                    "\nСтатус работника: " + manager.getWorkerForTask().getStatus() + "\nВведите тему задания в формате:\n" +
+                    "Тема текст темы";
+        } else {
+            manager.setWorkerForTask(null);
+            text = "Задание для всех" + "\nВведите тему задания в формате:\n" +
+                    "Тема текст темы";
         }
-        manager.setWorkerForTask(userRepository.getReferenceById(Long.parseLong(split[2])));
-        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
-        buttons.put("К списку подчиненных", "TASK_GIVE");
-        String link = "";
-        String text = "Задание для " + manager.getWorkerForTask().getFirstName() + " " + manager.getWorkerForTask().getLastName() +
-                "\nСтатус работника: "  + manager.getWorkerForTask().getStatus() + "\nВведите тему задания в формате:\n" +
-                "Тема текст темы";
+        buttons.put("В меню", "TASK_GIVE");
         return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
     }
 
@@ -181,11 +215,17 @@ public class TaskLocation {
         User manager = userService.getUserByTelegramId(Long.parseLong(chatId));
         manager.setTittleForTask(data.replaceFirst("Тема", ""));
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
-        buttons.put("К списку подчиненных", "TASK_GIVE");
+        buttons.put("В меню", "TASK_GIVE");
         String link = "";
-        String text = "Задание для " + manager.getWorkerForTask().getFirstName() + " " + manager.getWorkerForTask().getLastName() +
-                "\nСтатус работника: "  + manager.getWorkerForTask().getStatus() + "\nВведите дату исполения в формате:\n" +
-                "Срок количество дней";
+        String text;
+        if (manager.getWorkerForTask() != null) {
+            text = "Задание для " + manager.getWorkerForTask().getFirstName() + " " + manager.getWorkerForTask().getLastName() +
+                    "\nСтатус работника: " + manager.getWorkerForTask().getStatus() + "\nВведите срок исполения в формате:\n" +
+                    "Срок количество дней";
+        } else {
+            text = "Задание для всех" + "\nВведите срок исполнения в формате:\n" +
+                    "Срок количество дней";
+        }
         return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
     }
 
@@ -194,11 +234,17 @@ public class TaskLocation {
         String[] split = data.split(" ");
         manager.setEndOfTask(LocalDateTime.now().plusDays(Long.parseLong(split[1])));
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
-        buttons.put("К списку подчиненных", "TASK_GIVE");
+        buttons.put("В меню", "TASK_GIVE");
         String link = "";
-        String text = "Задание для " + manager.getWorkerForTask().getFirstName() + " " + manager.getWorkerForTask().getLastName() +
-                "\nСтатус работника: "  + manager.getWorkerForTask().getStatus() + "\nВведите текст задания в формате:\n" +
-                "Задание текст задания";
+        String text;
+        if (manager.getWorkerForTask() != null) {
+            text = "Задание для " + manager.getWorkerForTask().getFirstName() + " " + manager.getWorkerForTask().getLastName() +
+                    "\nСтатус работника: " + manager.getWorkerForTask().getStatus() + "\nВведите текст задания в формате:\n" +
+                    "Задание текст задания";
+        } else {
+            text = "Задание для всех" + "\nВведите текст задания в формате:\n" +
+                    "Задание текст задания";
+        }
         return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
     }
 
@@ -211,10 +257,15 @@ public class TaskLocation {
         buttons.put("3", "TASK_SETSCORE_3");
         buttons.put("4", "TASK_SETSCORE_4");
         buttons.put("5", "TASK_SETSCORE_5");
-        buttons.put("К списку подчиненных", "TASK_GIVE");
+        buttons.put("В меню", "TASK_GIVE");
         String link = "";
-        String text = "Задание для " + manager.getWorkerForTask().getFirstName() + " " + manager.getWorkerForTask().getLastName() +
-                "\nСтатус работника: "  + manager.getWorkerForTask().getStatus() + "\nВведите сложность задания";
+        String text;
+        if (manager.getWorkerForTask() != null) {
+            text = "Задание для " + manager.getWorkerForTask().getFirstName() + " " + manager.getWorkerForTask().getLastName() +
+                    "\nСтатус работника: " + manager.getWorkerForTask().getStatus() + "\nВведите сложность задания";
+        } else {
+            text = "Задание для всех" + "\nВведите сложность задания";
+        }
         return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
     }
 
@@ -222,13 +273,18 @@ public class TaskLocation {
         User manager = userService.getUserByTelegramId(Long.parseLong(chatId));
         String[] split = data.split("_");
         manager.setTaskScore(Integer.parseInt(split[2]));
-        String text = "Задание для " + manager.getWorkerForTask().getFirstName() + " " + manager.getWorkerForTask().getLastName() +
-                "\nСтатус работника: "  + manager.getWorkerForTask().getStatus() + "\nЗадание успешно создано и отправлено работнику";
-        createTask(manager);
+        String text;
+        if (manager.getWorkerForTask() != null) {
+            text = "Задание для " + manager.getWorkerForTask().getFirstName() + " " + manager.getWorkerForTask().getLastName() +
+                    "\nСтатус работника: " + manager.getWorkerForTask().getStatus() + "\nЗадание успешно создано и отправлено работнику";
+            createTask(manager);
+        } else {
+            text = "Задание успешно создано и отправлено работникам";
+            createMassTask(manager);
+        }
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
-        buttons.put("К списку подчиненных", "TASK_GIVE");
+        buttons.put("В меню", "TASK_GIVE");
         String link = "";
-
         return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
     }
 
@@ -244,6 +300,30 @@ public class TaskLocation {
                 manager.getEndOfTask(),
                 TaskStatus.НОВАЯ);
         taskRepository.save(task);
+        manager.setWorkerForTask(null);
+        manager.setTittleForTask(null);
+        manager.setTaskText(null);
+        manager.setTaskScore(null);
+        manager.setEndOfTask(null);
+    }
+
+    private void createMassTask(User manager) {
+        List<User> workers = userRepository.getAllByManagerId(manager.getId());
+        for (User worker : workers) {
+            if (worker.getTelegramId() != null) {
+                Task task = new Task(
+                        null,
+                        manager,
+                        worker,
+                        manager.getTittleForTask(),
+                        manager.getTaskText(),
+                        manager.getTaskScore(),
+                        LocalDateTime.now(),
+                        manager.getEndOfTask(),
+                        TaskStatus.НОВАЯ);
+                taskRepository.save(task);
+            }
+        }
         manager.setWorkerForTask(null);
         manager.setTittleForTask(null);
         manager.setTaskText(null);
