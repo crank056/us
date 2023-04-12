@@ -14,6 +14,9 @@ import crank.us.services.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
@@ -112,5 +115,21 @@ public class UserLocation {
         return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
     }
 
-
+    public SendMessage getRating(String chatId) {
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        Sort sortByRating = Sort.by(Sort.Direction.DESC, "rating");
+        Pageable page = PageRequest.of(0, 10, sortByRating);
+        List<User> rating = userRepository.findAllByDivision(page, userRepository.getByTelegramId(Long.parseLong(chatId)).getDivision()).getContent();
+        int count = 1;
+        String text = "";
+        for(User user: rating) {
+            if(user.getRating() != null) {
+                text = text + count + ". " + user.getFirstName() + " " + user.getLastName() + ": " + user.getRating() + "\n";
+                count++;
+            }
+        }
+        count++;
+        String link = "";
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, text, link);
+    }
 }

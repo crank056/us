@@ -59,6 +59,8 @@ public class MessageHandler {
             return userLocation.getProfile(chatId);
         } else if (inputText.equalsIgnoreCase("задания")) {
             return taskLocation.goToLocation(chatId);
+        } else if (inputText.equalsIgnoreCase("рейтинг")) {
+            return userLocation.getRating(chatId);
         } else if (inputText.toLowerCase().startsWith("тема")) {
             return taskLocation.setTittle(chatId, inputText);
         } else if (inputText.toLowerCase().startsWith("срок")) {

@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS USERS
     task_text         VARCHAR,
     task_score        INTEGER,
     status            VARCHAR,
-    position          VARCHAR
+    position          VARCHAR,
+    rating            BIGINT
 );
 
 CREATE TABLE IF NOT EXISTS TASKS

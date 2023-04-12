@@ -12,6 +12,9 @@ import crank.us.services.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -116,6 +119,9 @@ public class TaskLocation {
         String[] split = data.split("_");
         Task task = taskRepository.getReferenceById(Long.parseLong(split[3]));
         task.setTaskStatus(TaskStatus.valueOf(split[2]));
+        if(split[2].equals(TaskStatus.СОГЛАСОВАНА.name())) {
+            task.getWorker().setRating(task.getScore().longValue());
+        }
         String text = "Статус установлен на " + task.getTaskStatus();
         buttons.put("К списку текущих задач", "TASK_GETLIST_ВЫПОЛНЯЕТСЯ");
         String link = "";

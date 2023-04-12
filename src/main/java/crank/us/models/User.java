@@ -54,6 +54,7 @@ public class User {
     private UserStatus status;
     @Enumerated(EnumType.STRING)
     private Position position;
+    private Long rating;
 
     @Override
     public String toString() {
