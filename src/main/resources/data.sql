@@ -7,3 +7,7 @@ INSERT INTO USERS (telegram_id, first_name, last_name, personal_number, is_manag
 INSERT INTO USERS (telegram_id, first_name, last_name, personal_number, is_manager, manager_id) VALUES ('5546','Подчиненный2', 'Кандалова','22065626', false, '3');
 INSERT INTO USERS (telegram_id, first_name, last_name, personal_number, is_manager, manager_id) VALUES ('5547','Подчиненный3', 'Кандалова','22065627', false, '3');
 INSERT INTO USERS ( first_name, last_name, personal_number, is_manager, manager_id) VALUES ('Подчиненный4', 'Кандалова','22065628', false, '3');
+INSERT INTO PICTURES (add_date, tittle, link, actual) VALUES (now(), 'ЭСПЦ исванов', 'LINK/images/bigenergypotion.png', true);
+INSERT INTO PICTURES (add_date, tittle, link, actual) VALUES (now(), 'ЭСПЦ исва', 'LINK/images/bigenergypotion.png', false);
+INSERT INTO PICTURES (add_date, tittle, link, actual) VALUES (now(), 'ЭСПЦ исван', 'LINK/images/littlehealthpotion.png', true);
+

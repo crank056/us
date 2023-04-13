@@ -71,6 +71,7 @@ public class Bot extends SpringWebhookBot {
                         String link = split[split.length - 1];
                         sendMessage.setText(split[0]);
                         execute(new SendPhoto(sendMessage.getChatId(), new InputFile(new File(link))));
+                        log.info("Отправлено фото");
                     }
                     sendMessage.setText(sendMessage.getText().replace("_", "\\_"));
                 } else {

@@ -3,6 +3,7 @@ package crank.us.bot;
 import crank.us.exceptions.AccessException;
 import crank.us.exceptions.ExistException;
 import crank.us.exceptions.WrongFormatException;
+import crank.us.locations.PictureLocation;
 import crank.us.locations.TaskLocation;
 import crank.us.locations.UserLocation;
 import crank.us.services.UserService;
@@ -21,6 +22,7 @@ public class CallbackQueryHandler {
     UserService userService;
     UserLocation userLocation;
     TaskLocation taskLocation;
+    PictureLocation pictureLocation;
 
     public BotApiMethod<?> processCallbackQuery(CallbackQuery buttonQuery)
             throws ExistException, WrongFormatException, AccessException {
@@ -34,8 +36,13 @@ public class CallbackQueryHandler {
         if (data.startsWith("USER")) {
             sendMessage = userLocation.menuHandler(chatId, data);
             return sendMessage;
-        } if (data.startsWith("TASK")) {
+        }
+        if (data.startsWith("TASK")) {
             sendMessage = taskLocation.menuHandler(chatId, data);
+            return sendMessage;
+        }
+        if (data.startsWith("PICTURE")) {
+            sendMessage = pictureLocation.menuHandler(chatId, data);
             return sendMessage;
         } else {
             return new SendMessage(chatId, "Неизвестный callback");

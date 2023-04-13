@@ -5,8 +5,10 @@ import crank.us.enums.Division;
 import crank.us.enums.Passwords;
 import crank.us.exceptions.ExistException;
 import crank.us.exceptions.WrongFormatException;
+import crank.us.locations.PictureLocation;
 import crank.us.locations.TaskLocation;
 import crank.us.locations.UserLocation;
+import crank.us.models.Picture;
 import crank.us.models.User;
 import crank.us.repositories.UserRepository;
 import crank.us.services.UserService;
@@ -31,6 +33,7 @@ public class MessageHandler {
     UserLocation userLocation;
     TaskLocation taskLocation;
     UserRepository userRepository;
+    PictureLocation pictureLocation;
 
 
     public BotApiMethod<?> answerMessage(Message message) throws ExistException, WrongFormatException {
@@ -61,6 +64,8 @@ public class MessageHandler {
             return taskLocation.goToLocation(chatId);
         } else if (inputText.equalsIgnoreCase("рейтинг")) {
             return userLocation.getRating(chatId);
+        } else if (inputText.equalsIgnoreCase("отипб")) {
+            return pictureLocation.goToLocation(chatId);
         } else if (inputText.toLowerCase().startsWith("тема")) {
             return taskLocation.setTittle(chatId, inputText);
         } else if (inputText.toLowerCase().startsWith("срок")) {
@@ -93,7 +98,7 @@ public class MessageHandler {
         } catch (IllegalArgumentException e) {
             throw new WrongFormatException("Неверный пароль");
         }
-        if(!userRepository.existsByPersonalNumber(Integer.parseInt(split[1]))) {
+        if (!userRepository.existsByPersonalNumber(Integer.parseInt(split[1]))) {
             throw new ExistException("Вы еще не зарегистрированы в системе. Обратитесь к руководителю");
         }
         userService.createUser(Integer.parseInt(split[1]), message.getFrom().getId());

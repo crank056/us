@@ -17,6 +17,7 @@ public class ReplyKeyboardMaker {
         keyboard.add(createKeyBoardRow("Задания"));
         keyboard.add(createKeyBoardRow("Рейтинг"));
         keyboard.add(createKeyBoardRow("Настройки"));
+        keyboard.add(createKeyBoardRow("ОТиПБ"));
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setKeyboard(keyboard);
         replyKeyboardMarkup.setSelective(true);
