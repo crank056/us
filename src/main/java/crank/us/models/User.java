@@ -66,6 +66,7 @@ public class User {
                 "Должность: " + this.position + "\n" +
                 "Подразделение: " + this.division + "\n" +
                 "Руководитель: " + this.manager.getFirstName() + " " + this.manager.getLastName() + "\n" +
-                "Статус: " + this.status + "\n";
+                "Статус: " + this.status + "\n" +
+                "Рейтинг: " + this.rating + "\n";
     }
 }

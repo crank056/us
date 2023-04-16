@@ -1,12 +1,16 @@
 package crank.us.bot;
 
+import crank.us.enums.TaskStatus;
 import crank.us.exceptions.AccessException;
 import crank.us.exceptions.ExistException;
 import crank.us.exceptions.WrongFormatException;
+import crank.us.models.Task;
+import crank.us.repositories.TaskRepository;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendInvoice;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -17,11 +21,14 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.payments.LabeledPrice;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.starter.SpringWebhookBot;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Setter
@@ -33,6 +40,10 @@ public class Bot extends SpringWebhookBot {
     String botToken;
     MessageHandler messageHandler;
     CallbackQueryHandler callbackQueryHandler;
+    @Autowired
+    TaskRepository taskRepository;
+    @Autowired
+    InlineKeyboardMaker inlineKeyboardMaker;
 
 
     public Bot(SetWebhook setWebhook, MessageHandler messageHandler, CallbackQueryHandler callbackQueryHandler) {
@@ -104,6 +115,31 @@ public class Bot extends SpringWebhookBot {
             }
         }
         return null;
+    }
+
+
+    @Scheduled(fixedRate = 100000)
+    public void refreshPricingParameters() {
+        List<Task>  taskList = taskRepository.getAllByTaskStatus(TaskStatus.НОВАЯ);
+        for(Task task: taskList) {
+            LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+            buttons.put("Принять в работу", "TASK_SETSTATUS_" + TaskStatus.ВЫПОЛНЯЕТСЯ + "_" + task.getId());
+            String link = "";
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+            String text = "У вас новая задача: \n" +
+                    "Дата: " + task.getStartDate().format(formatter) + "\n" +
+                    "Дата завершения: " + task.getEndDate().format(formatter) + "\n" +
+                    "Выдал: " + task.getManager().getFirstName() + " " + task.getManager().getLastName() + "\n" +
+                    "Тема: " + task.getTittle() + "\n" +
+                    "Задание: " + task.getText() + "\n";
+            SendMessage sendMessage = inlineKeyboardMaker.makeMessage(
+                    task.getWorker().getTelegramId().toString(), buttons, text, link);
+            try {
+                execute(sendMessage);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }
 

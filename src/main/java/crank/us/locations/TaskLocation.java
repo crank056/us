@@ -120,7 +120,7 @@ public class TaskLocation {
         Task task = taskRepository.getReferenceById(Long.parseLong(split[3]));
         task.setTaskStatus(TaskStatus.valueOf(split[2]));
         if(split[2].equals(TaskStatus.СОГЛАСОВАНА.name())) {
-            task.getWorker().setRating(task.getScore().longValue());
+            task.getWorker().setRating(task.getWorker().getRating() + task.getScore().longValue());
         }
         String text = "Статус установлен на " + task.getTaskStatus();
         buttons.put("К списку текущих задач", "TASK_GETLIST_ВЫПОЛНЯЕТСЯ");
