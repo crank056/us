@@ -36,16 +36,23 @@ public class Task {
     @Column(name = "task_status")
     @Enumerated(EnumType.STRING)
     private TaskStatus taskStatus;
+    @Column(name = "is_repeat")
+    private boolean isRepeat;
+    private Integer period;
 
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
-        return "Кем выдано: " + this.manager.getFirstName() + " " + this.manager.getLastName() + "\n" +
+        String text = "Кем выдано: " + this.manager.getFirstName() + " " + this.manager.getLastName() + "\n" +
                 "Исполнитель: " + this.worker.getFirstName() + " " + this.worker.getLastName() + "\n" +
                 "Дата выдачи: " + this.startDate.format(formatter) + "\n" +
                 "Срок выполнения: " + this.endDate.format(formatter) + "\n" +
                 "Очки: " + this.score + "\n" +
                 "Статус: " + this.taskStatus + "\n" +
                 "Текст: " + this.text;
+        if(this.isRepeat) {
+            text = text + "\n Повтор каждые: " + this.period + " дней";
+        }
+        return text;
     }
 }

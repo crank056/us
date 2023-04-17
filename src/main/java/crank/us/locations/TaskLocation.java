@@ -34,14 +34,23 @@ public class TaskLocation {
     TaskRepository taskRepository;
     InlineKeyboardMaker inlineKeyboardMaker;
 
-    public SendMessage goToLocation(String chatId) {
+    public SendMessage goToWorker(String chatId) {
         LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
         buttons.put("Новые задания", "TASK_GETLIST_НОВАЯ");
         buttons.put("Текущие задания", "TASK_GETLIST_ВЫПОЛНЯЕТСЯ");
         buttons.put("Завершенные задания", "TASK_GETLIST_ЗАВЕРШЕНА");
         buttons.put("Согласованные задания", "TASK_GETLIST_СОГЛАСОВАНА");
-        buttons.put("Выданные задания", "TASK_GIVED");
+        String link = "";
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, "Меню заданий", link);
+    }
+
+    public SendMessage goToManager(String chatId) throws AccessException {
+        if (!userRepository.getByTelegramId(Long.parseLong(chatId)).getIsManager()) {
+            throw new AccessException("Вы не являетесь руководителем");
+        }
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
         buttons.put("Выдать задание", "TASK_GIVE");
+        buttons.put("Выданные задания", "TASK_GIVED");
         String link = "";
         return inlineKeyboardMaker.makeMessage(chatId, buttons, "Меню заданий", link);
     }
@@ -67,6 +76,12 @@ public class TaskLocation {
             return giveTask(chatId, data);
         } else if (data.startsWith("TASK_SETSCORE_")) {
             return setScore(chatId, data);
+        } else if (data.startsWith("TASK_SETREPEAT_")) {
+            return setRepeat(chatId, data);
+        } else if (data.startsWith("TASK_CANCELREPEAT_")) {
+            return cancelRepeat(chatId, data);
+        } else if (data.startsWith("TASK_SETPERIOD_")) {
+            return setPeriod(chatId, data);
         } else {
             sendMessage.setText("Неизвестная команда, воспользуйся меню");
             return sendMessage;
@@ -104,6 +119,7 @@ public class TaskLocation {
         if (task.getManager().getTelegramId().equals(Long.parseLong(chatId))) {
             if (task.getTaskStatus().equals(TaskStatus.НОВАЯ)
                     || task.getTaskStatus().equals(TaskStatus.ВЫПОЛНЯЕТСЯ)) {
+                buttons.put("Настроить", "TASK_SETREPEAT_" + task.getId());
                 buttons.put("Отменить", "TASK_SETSTATUS_" + TaskStatus.ОТМЕНЕНА + "_" + task.getId());
             } else if (task.getTaskStatus().equals(TaskStatus.ЗАВЕРШЕНА)) {
                 buttons.put("Согласовать", "TASK_SETSTATUS_" + TaskStatus.СОГЛАСОВАНА + "_" + task.getId());
@@ -119,7 +135,7 @@ public class TaskLocation {
         String[] split = data.split("_");
         Task task = taskRepository.getReferenceById(Long.parseLong(split[3]));
         task.setTaskStatus(TaskStatus.valueOf(split[2]));
-        if(split[2].equals(TaskStatus.СОГЛАСОВАНА.name())) {
+        if (split[2].equals(TaskStatus.СОГЛАСОВАНА.name())) {
             task.getWorker().setRating(task.getWorker().getRating() + task.getScore().longValue());
         }
         String text = "Статус установлен на " + task.getTaskStatus();
@@ -304,7 +320,9 @@ public class TaskLocation {
                 manager.getTaskScore(),
                 LocalDateTime.now(),
                 manager.getEndOfTask(),
-                TaskStatus.НОВАЯ);
+                TaskStatus.НОВАЯ,
+                false,
+                null);
         taskRepository.save(task);
         manager.setWorkerForTask(null);
         manager.setTittleForTask(null);
@@ -326,7 +344,9 @@ public class TaskLocation {
                         manager.getTaskScore(),
                         LocalDateTime.now(),
                         manager.getEndOfTask(),
-                        TaskStatus.НОВАЯ);
+                        TaskStatus.НОВАЯ,
+                        false,
+                        null);
                 taskRepository.save(task);
             }
         }
@@ -335,5 +355,45 @@ public class TaskLocation {
         manager.setTaskText(null);
         manager.setTaskScore(null);
         manager.setEndOfTask(null);
+    }
+
+    private SendMessage setRepeat(String chatId, String data) throws AccessException {
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        String[] split = data.split("_");
+        Task task = taskRepository.getReferenceById(Long.parseLong(split[2]));
+        if (task.isRepeat()) {
+            buttons.put("Отменить повторение задачи", "TASK_CANCELREPEAT_" + task.getId());
+        } else {
+            buttons.put("Повторять каждые сутки", "TASK_SETPERIOD_1_" + task.getId());
+            buttons.put("Повторять раз в 2 дня", "TASK_SETPERIOD_2_" + task.getId());
+            buttons.put("Повторять раз в 3 дня", "TASK_SETPERIOD_3_" + task.getId());
+            buttons.put("Повторять раз в 4 дня", "TASK_SETPERIOD_4_" + task.getId());
+            buttons.put("Повторять раз в 5 дней", "TASK_SETPERIOD_5_" + task.getId());
+            buttons.put("Повторять раз в 6 дней", "TASK_SETPERIOD_6_" + task.getId());
+            buttons.put("Повторять раз в неделю", "TASK_SETPERIOD_7_" + task.getId());
+        }
+        String link = "";
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, "Выберите опцию:", link);
+    }
+
+    private SendMessage cancelRepeat(String chatId, String data) {
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        String[] split = data.split("_");
+        Task task = taskRepository.getReferenceById(Long.parseLong(split[2]));
+        task.setRepeat(false);
+        buttons.put("К задаче", "TASK_GET_" + task.getId());
+        String link = "";
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, "Повторение задачи отменено", link);
+    }
+
+    private SendMessage setPeriod(String chatId, String data) {
+        LinkedHashMap<String, String> buttons = new LinkedHashMap<>();
+        String[] split = data.split("_");
+        Task task = taskRepository.getReferenceById(Long.parseLong(split[3]));
+        task.setPeriod(Integer.parseInt(split[2]));
+        task.setRepeat(true);
+        buttons.put("К задаче", "TASK_GET_" + task.getId());
+        String link = "";
+        return inlineKeyboardMaker.makeMessage(chatId, buttons, "Период повторения установлен", link);
     }
 }

@@ -3,6 +3,7 @@ package crank.us.bot;
 import crank.us.enums.BotMessages;
 import crank.us.enums.Division;
 import crank.us.enums.Passwords;
+import crank.us.exceptions.AccessException;
 import crank.us.exceptions.ExistException;
 import crank.us.exceptions.WrongFormatException;
 import crank.us.locations.PictureLocation;
@@ -36,7 +37,7 @@ public class MessageHandler {
     PictureLocation pictureLocation;
 
 
-    public BotApiMethod<?> answerMessage(Message message) throws ExistException, WrongFormatException {
+    public BotApiMethod<?> answerMessage(Message message) throws ExistException, WrongFormatException, AccessException {
         String inputText = message.getText();
         if (inputText == null) {
             throw new ExistException("Нет айди чата");
@@ -60,8 +61,10 @@ public class MessageHandler {
             return getKeyboard(message);
         } else if (inputText.equalsIgnoreCase("профиль")) {
             return userLocation.getProfile(chatId);
-        } else if (inputText.equalsIgnoreCase("задания")) {
-            return taskLocation.goToLocation(chatId);
+        } else if (inputText.equalsIgnoreCase("работник")) {
+            return taskLocation.goToWorker(chatId);
+        } else if (inputText.equalsIgnoreCase("руководитель")) {
+            return taskLocation.goToManager(chatId);
         } else if (inputText.equalsIgnoreCase("рейтинг")) {
             return userLocation.getRating(chatId);
         } else if (inputText.equalsIgnoreCase("отипб")) {

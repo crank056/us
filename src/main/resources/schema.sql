@@ -32,7 +32,9 @@ CREATE TABLE IF NOT EXISTS TASKS
     score       INTEGER,
     start_date  TIMESTAMP WITHOUT TIME ZONE,
     end_date    TIMESTAMP WITHOUT TIME ZONE,
-    task_status VARCHAR
+    task_status VARCHAR,
+    is_repeat   BOOLEAN,
+    period      INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS PICTURES

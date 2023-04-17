@@ -14,9 +14,9 @@ public class ReplyKeyboardMaker {
     public ReplyKeyboardMarkup getMainMenuKeyboard() {
         List<KeyboardRow> keyboard = new ArrayList<>();
         keyboard.add(createKeyBoardRow("Профиль"));
-        keyboard.add(createKeyBoardRow("Задания"));
+        keyboard.add(createKeyBoardRow("Работник"));
+        keyboard.add(createKeyBoardRow("Руководитель"));
         keyboard.add(createKeyBoardRow("Рейтинг"));
-        keyboard.add(createKeyBoardRow("Настройки"));
         keyboard.add(createKeyBoardRow("ОТиПБ"));
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setKeyboard(keyboard);
