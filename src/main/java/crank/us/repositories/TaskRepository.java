@@ -16,4 +16,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> getAllByManagerIdAndEndDateBefore(Long managerId, LocalDateTime endDate);
 
     List getAllByTaskStatus(TaskStatus taskStatus);
+
+    List<Task> getAllByRepeatAndTaskStatus(Boolean isRepeat, TaskStatus taskStatus);
 }

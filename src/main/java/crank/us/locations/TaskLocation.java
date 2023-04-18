@@ -15,11 +15,14 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -395,5 +398,28 @@ public class TaskLocation {
         buttons.put("К задаче", "TASK_GET_" + task.getId());
         String link = "";
         return inlineKeyboardMaker.makeMessage(chatId, buttons, "Период повторения установлен", link);
+    }
+
+    @Scheduled(fixedRate = 100000)
+    public void repeatTask() {
+        List<Task> taskList = taskRepository.getAllByRepeatAndTaskStatus(true, TaskStatus.СОГЛАСОВАНА);
+        for (Task task : taskList) {
+            if (task.getStartDate().plusDays(task.getPeriod()).isBefore(LocalDateTime.now())) {
+                task.setRepeat(false);
+                Task newTask = new Task(
+                        null,
+                        task.getManager(),
+                        task.getWorker(),
+                        task.getTittle(),
+                        task.getText(),
+                        task.getScore(),
+                        LocalDateTime.now(),
+                        task.getEndDate(),
+                        TaskStatus.НОВАЯ,
+                        true,
+                        task.getPeriod());
+                taskRepository.save(newTask);
+            }
+        }
     }
 }
