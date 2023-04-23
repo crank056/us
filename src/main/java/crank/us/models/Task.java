@@ -36,8 +36,7 @@ public class Task {
     @Column(name = "task_status")
     @Enumerated(EnumType.STRING)
     private TaskStatus taskStatus;
-    @Column(name = "is_repeat")
-    private boolean isRepeat;
+    private boolean repeat;
     private Integer period;
 
     @Override
@@ -50,7 +49,7 @@ public class Task {
                 "Очки: " + this.score + "\n" +
                 "Статус: " + this.taskStatus + "\n" +
                 "Текст: " + this.text;
-        if(this.isRepeat) {
+        if(this.repeat) {
             text = text + "\n Повтор каждые: " + this.period + " дней";
         }
         return text;

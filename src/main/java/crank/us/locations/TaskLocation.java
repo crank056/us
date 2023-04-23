@@ -12,17 +12,12 @@ import crank.us.services.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,6 +38,7 @@ public class TaskLocation {
         buttons.put("Текущие задания", "TASK_GETLIST_ВЫПОЛНЯЕТСЯ");
         buttons.put("Завершенные задания", "TASK_GETLIST_ЗАВЕРШЕНА");
         buttons.put("Согласованные задания", "TASK_GETLIST_СОГЛАСОВАНА");
+        buttons.put("Свободные задания", "TASK_GETLIST_СВОБОДНАЯ");
         String link = "";
         return inlineKeyboardMaker.makeMessage(chatId, buttons, "Меню заданий", link);
     }
@@ -98,7 +94,9 @@ public class TaskLocation {
                 userService.getUserByTelegramId(Long.parseLong(chatId)).getId(),
                 TaskStatus.valueOf(split[2]));
         for (Task task : taskList) {
-            buttons.put(task.getTittle(), "TASK_GET_" + task.getId());
+            if(userService.getUserByTelegramId(Long.parseLong(chatId)).getManager().getId().equals(task.getManager().getId())) {
+                buttons.put(task.getTittle(), "TASK_GET_" + task.getId());
+            }
         }
         String link = "";
         return inlineKeyboardMaker.makeMessage(chatId, buttons, "Список задач со статусом " + split[2], link);

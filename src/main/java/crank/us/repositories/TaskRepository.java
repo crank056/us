@@ -17,5 +17,5 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     List getAllByTaskStatus(TaskStatus taskStatus);
 
-    List<Task> getAllByRepeatAndTaskStatus(Boolean isRepeat, TaskStatus taskStatus);
+    List<Task> getAllByRepeatAndTaskStatus(Boolean repeat, TaskStatus taskStatus);
 }

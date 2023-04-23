@@ -57,7 +57,7 @@ public class MessageHandler {
             return getStart(message);
         } else if (inputText.toLowerCase().startsWith("ps")) {
             return getRegister(message);
-        } else if (inputText.toLowerCase().startsWith("/keyboard")) {
+        } else if (inputText.toLowerCase().startsWith("/menu")) {
             return getKeyboard(message);
         } else if (inputText.equalsIgnoreCase("профиль")) {
             return userLocation.getProfile(chatId);

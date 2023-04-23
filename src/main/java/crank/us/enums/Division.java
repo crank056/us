@@ -1,5 +1,5 @@
 package crank.us.enums;
 
 public enum Division {
-    КХП, АГЛОЦЕХ
+    КХП, АЦ, ДЦ, ЭСПЦ, УЖДТ, АТЦ, ТЭЦ, УПРАВЛЕНИЕ
 }
