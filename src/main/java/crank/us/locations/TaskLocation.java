@@ -398,7 +398,7 @@ public class TaskLocation {
         return inlineKeyboardMaker.makeMessage(chatId, buttons, "Период повторения установлен", link);
     }
 
-    @Scheduled(fixedRate = 100000)
+    /*@Scheduled(fixedRate = 100000)
     public void repeatTask() {
         List<Task> taskList = taskRepository.getAllByRepeatAndTaskStatus(true, TaskStatus.СОГЛАСОВАНА);
         for (Task task : taskList) {
@@ -419,5 +419,5 @@ public class TaskLocation {
                 taskRepository.save(newTask);
             }
         }
-    }
+    }*/
 }

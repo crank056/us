@@ -118,7 +118,7 @@ public class Bot extends SpringWebhookBot {
     }
 
 
-    @Scheduled(fixedRate = 100000)
+    /*@Scheduled(fixedRate = 100000)
     public void refreshPricingParameters() {
         List<Task>  taskList = taskRepository.getAllByTaskStatus(TaskStatus.НОВАЯ);
         for(Task task: taskList) {
@@ -140,6 +140,6 @@ public class Bot extends SpringWebhookBot {
                 throw new RuntimeException(e);
             }
         }
-    }
+    }*/
 }
 

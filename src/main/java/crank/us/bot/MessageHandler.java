@@ -46,7 +46,7 @@ public class MessageHandler {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         if (!userService.existByTelegramId(Long.parseLong(chatId))) {
-            if (!inputText.equalsIgnoreCase("/start") && !inputText.startsWith("ps")) {
+            if (!inputText.equalsIgnoreCase("/start") && !inputText.toLowerCase().startsWith("ps")) {
                 throw new ExistException("Зарегистрируйтесь отправив боту сообщение по форме: \n" +
                         "пароль табельный номер");
             }
